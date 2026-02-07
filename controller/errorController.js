@@ -1,5 +1,5 @@
-import e from 'express';
-import AppError from '../utils/appError.js';
+import express from 'express';
+import AppError from '../utils/AppError.js';
 
 //---------------------------------------------------------------------------------------------------
 const handleCastErrorDB = (err) => {
@@ -28,12 +28,12 @@ const handleValidationErrorDB = (err) => {
 
 //---------------------------------------------------------------------------------------------------
 const handleJWTError = () => {
-  new AppError('The user no longer exists.', 401);
+  return new AppError('The user no longer exists.', 401); // ✅ Add return
 };
 
 //---------------------------------------------------------------------------------------------------
 const handleJWTExpiredError = () => {
-  new AppError(' your Token has expired !!! please log in again ', 401);
+  return new AppError(' your Token has expired !!! please log in again ', 401);
 };
 
 //---------------------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ export default (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
+    sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
     let error = err;
     error.message = err.message;

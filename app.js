@@ -1,24 +1,23 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import morgan from 'morgan';
-import dotenv from 'dotenv';
-dotenv.config();
-import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
-import hpp from 'hpp';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import crypto from 'crypto'; // ✅ إضافة crypto
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+import express from 'express';
+import mongoSanitize from 'express-mongo-sanitize';
+import rateLimit from 'express-rate-limit';
+import hpp from 'hpp';
+import mongoose from 'mongoose';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import xss from 'xss-clean';
+dotenv.config();
 
-import AppError from './utils/appError.js';
-import userRouter from './routes/userRoute.js';
-import tourRouter from './routes/tourRoute.js';
-import reviewRouter from './routes/reviewRoute.js';
-import bookingRouter from './routes/bookingRoute.js';
+import adminRouter from './routes/adminRouter.js';
+import mealRouter from './routes/mealRouter.js';
+import offerRouter from './routes/offerRouter.js';
+import orderRouter from './routes/orderRouter.js';
 import viewRouter from './routes/viewRouter.js';
+import AppError from './utils/AppError.js';
 
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
@@ -27,6 +26,7 @@ const port = process.env.PORT || 3000;
 // حل مشكلة __dirname في ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+console.log('🔍 VIEWS DIR =', app.get('views'));
 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(express.json());
@@ -41,40 +41,12 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
-
 // ✅ Middleware للـ nonce و stripePublicKey
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
   res.locals.stripePublicKey = process.env.STRIPE_PUBLISHABLE_KEY;
   next();
 });
-
-// Set Security HTTP Headers
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: [
-          "'self'",
-          'https://js.stripe.com',
-          (req, res) => `'nonce-${res.locals.cspNonce}'`,
-        ],
-        scriptSrcElem: [
-          "'self'",
-          'https://js.stripe.com',
-          (req, res) => `'nonce-${res.locals.cspNonce}'`, // ✅ إضافة nonce هنا
-        ],
-        scriptSrcAttr: [(req, res) => `'nonce-${res.locals.cspNonce}'`], // ✅ مهم جداً!
-        frameSrc: ["'self'", 'https://js.stripe.com'],
-        connectSrc: ["'self'", 'https://api.stripe.com'],
-        imgSrc: ["'self'", 'data:', 'https://*'],
-        styleSrc: ["'self'", 'https://fonts.googleapis.com', "'unsafe-inline'"],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      },
-    },
-  })
-);
 
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
@@ -93,30 +65,49 @@ app.use((req, res, next) => {
   next();
 });
 
+// 4) يمنع تكرار نفس Query Parameter أكتر من مرة
 app.use(hpp());
 
 //-----------------------------------------------------------------------------------------
 app.set('view engine', 'pug');
-app.set('views', `${__dirname}/views`);
+app.set('views', path.join(__dirname, 'views'));
+console.log('VIEWS PATH 👉', app.get('views'));
 
-//-----------------------------------------------------------------------------------------
+// تحميل أسرع للصفحات استهلاك إنترنت أقل
+app.use(compression());
+
+//--------------------------------------------------------------------------------------------
+// =================================== The Routes ============================================
+//--------------------------------------------------------------------------------------------
 // ✅ Middleware لتمرير Stripe key لكل الصفحات
-app.use((req, res, next) => {
-  res.locals.stripePublicKey = process.env.STRIPE_PUBLISHABLE_KEY;
-  next();
-});
-
 
 app.get('/.well-known/*', (req, res) => res.status(204).end());
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
+
+app.use('/api/v1/meal', mealRouter);
+app.use('/api/v1/offer', offerRouter);
+app.use('/api/v1/order', orderRouter);
 app.use('/', viewRouter);
-app.use('/api/v1/users', userRouter);
-app.use('/api/v1/tours', tourRouter);
-app.use('/api/v1/reviews', reviewRouter);
-app.use('/api/v1/bookings', bookingRouter); // ✅ تصليح المسار
+app.use('/admin', adminRouter);
+
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  // For rendered pages
+  if (req.originalUrl.startsWith('/')) {
+    return res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      message: err.message,
+      error: err,
+    });
+  }
+
+  // For API routes
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+  });
+});
 
 // 404 handler للـ routes اللي مش موجودة
 app.all('*', (req, res, next) => {
@@ -159,12 +150,12 @@ process.on('uncaughtException', (err) => {
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    console.log('✅ ');
+    console.log('✅ Connected to MongoDB');
 
     app.listen(port, () => {
-      console.log(` app listening at http://localhost:${port}`);
+      console.log(`🚀 App listening at http://localhost:${port}`);
     });
   })
   .catch((err) => console.error('❌ MongoDB Error:', err));
 
- export default app;
+export default app;

@@ -1,24 +1,56 @@
 doctype html
-html
+html(lang="ar" dir="rtl")
   head
-    block head
-      meta(charset='UTF-8')
-      meta(name='viewport' content='width=device-width, initial-scale=1.0')
-      link(rel='stylesheet' href='/css/style.css')
-      link(rel='shortcut icon' type='image/png' href='/img/favicon.png')
-      link(rel='stylesheet' href='https://fonts.googleapis.com/css?family=Lato:300,300i,700')
-      link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title  شواية- #{title}
+    link(rel="stylesheet" href="/css/style.css")
+    link(rel="icon" type="image/png" href="/img/logo.png")
 
-      title Natours | #{title}
+  body
+    // Header
+    header.header
+      .container
+        .nav-wrapper
+          .logo
+            img(src="/img/logo.png" alt=""  )
+            .logo-text
+              p أسرع واطلب نقعة جديدة
+          nav.nav
+           a(href="/" class=(title === 'Home' ? 'active' : '')) الرئيسية
+           a(href="/menu" class=(title === 'Menu' ? 'active' : '')) المنيو
+           a(href="/offers" class=(title === 'Offers' ? 'active' : '')) العروض
+           a.cart-link(href="/cart" class=(title === 'Cart' ? 'active' : ''))
+              svg(width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2")
+                circle(cx="9" cy="21" r="1")
+                circle(cx="20" cy="21" r="1")
+                path(d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6")
+              span.cart-count 0
+          //- button.mobile-menu-btn
+          //-   span
+          //-   span
+          //-   span
 
-
-      script(src='https://js.stripe.com/v3/')
-
-  body(data-alert=`${alert ? alert : ''}` data-stripe-key=stripePublicKey)
-
-    include _header
     block content
-    include _footer
+    // Footer
+    footer.footer
+      .container
+        .footer-content
+          .footer-logo
+            img(src="/img/logo.png" alt="Ya Kebda")
+            p أسرع واطلب نقعة جديدة
+          .footer-links
+            h4 روابط سريعة
+            a(href="/") الرئيسية
+            a(href="/menu") المنيو
+            a(href="/offers") العروض
+            a(href="/cart") السلة
+          .footer-contact
+            h4 تواصل معنا
+            p 📞 +20 123 456 7890
+            p 📧ramym4665@gmail.com
+            p 📍  العزازيه ، مصر
+        .footer-bottom
+          p © 2024 يا كبدة - Ya Kebda. جميع الحقوق محفوظة.
 
-    block scripts
-      script(type="module" src='/js/index.js')
+    script(src="/js/script.js")

@@ -1,0 +1,296 @@
+extends base
+
+block content
+
+  // Page Header
+  section.page-header
+    .container
+      h1 📋 طلب جديد
+      p اختر الأطباق وحدد الكمية
+
+  // رقم الترابيزة
+  section.table-number-section
+    .container
+      .table-number-box
+        .form-row
+          .form-group
+            label(for="tableNumber") رقم الترابيزة
+            input#tableNumber(type="text" placeholder="مثال: 5" required)
+
+        .form-row
+          .form-group
+            label(for="customerNotes") ملاحظات (اختياري)
+            textarea#customerNotes(rows="2" placeholder="ملاحظات إضافية")
+
+  // Products Section - Waiter Style
+  section.waiter-products-section
+    .container
+      .waiter-grid#waiterGrid
+        each meal in meals
+          .waiter-item(data-category=meal.category)
+            .waiter-item-content
+              h3.waiter-item-name= meal.name
+              .waiter-item-controls
+                button.waiter-qty-btn(
+                  type="button"
+                  onclick=`decreaseWaiterQty(this)`
+                ) −
+                input.waiter-qty-input(
+                  type="number"
+                  value="0"
+                  min="0"
+                  max="99"
+                  readonly
+                  data-name=meal.name
+                  data-price=meal.price
+                  data-image=meal.image
+                )
+                button.waiter-qty-btn(
+                  type="button"
+                  onclick=`increaseWaiterQty(this)`
+                ) +
+
+  // العروض
+  section.waiter-offers-section
+    .container
+      h2.offers-title 🎁 العروض الخاصة
+      .waiter-grid#waiterOffersGrid
+        .waiter-item.waiter-offer
+          .waiter-item-content
+            h3.waiter-item-name عرض الكبدة الإسكندراني (2 كيلو)
+            .waiter-item-controls
+              button.waiter-qty-btn(
+                type="button"
+                onclick=`decreaseWaiterQty(this)`
+              ) −
+              input.waiter-qty-input(
+                type="number"
+                value="0"
+                min="0"
+                max="99"
+                readonly
+                data-name="عرض الكبدة الإسكندراني"
+                data-price="450"
+                data-image="/images/offer1.jpg"
+              )
+              button.waiter-qty-btn(
+                type="button"
+                onclick=`increaseWaiterQty(this)`
+              ) +
+
+        .waiter-item.waiter-offer
+          .waiter-item-content
+            h3.waiter-item-name عرض العائلة (كبدة + ممبار + سجق)
+            .waiter-item-controls
+              button.waiter-qty-btn(
+                type="button"
+                onclick=`decreaseWaiterQty(this)`
+              ) −
+              input.waiter-qty-input(
+                type="number"
+                value="0"
+                min="0"
+                max="99"
+                readonly
+                data-name="عرض العائلة"
+                data-price="600"
+                data-image="/images/offer2.jpg"
+              )
+              button.waiter-qty-btn(
+                type="button"
+                onclick=`increaseWaiterQty(this)`
+              ) +
+
+  // Order Summary
+  section.waiter-summary-section
+    .container
+      .waiter-summary
+        h3 📝 ملخص الطلب
+        #waiterOrderItems.waiter-order-items
+          p.empty-order لم تقم بإضافة أي طلبات بعد
+        .waiter-total
+          span الإجمالي:
+          span#waiterTotal 0 جنيه
+        button#submitOrderBtn.btn.btn-primary.btn-submit-order(
+          type="button"
+          onclick="submitWaiterOrder()"
+        ) إرسال الطلب ✓
+
+  // Success Modal
+  #waiterSuccessModal.modal
+    .modal-content
+      .modal-icon.success ✓
+      h2 تم إرسال الطلب بنجاح!
+      p رقم الطلب: <span id="modalOrderNumber"></span>
+      p رقم الترابيزة: <span id="modalTableNumber"></span>
+      p الإجمالي: <span id="modalTotal"></span> جنيه
+      button.btn.btn-primary(onclick="closeWaiterModal()") حسناً
+
+  script.
+    // Increase quantity
+    function increaseWaiterQty(btn) {
+      const input = btn.previousElementSibling;
+      const currentVal = parseInt(input.value) || 0;
+      if (currentVal < 99) {
+        input.value = currentVal + 1;
+        updateWaiterSummary();
+      }
+    }
+
+    // Decrease quantity
+    function decreaseWaiterQty(btn) {
+      const input = btn.nextElementSibling;
+      const currentVal = parseInt(input.value) || 0;
+      if (currentVal > 0) {
+        input.value = currentVal - 1;
+        updateWaiterSummary();
+      }
+    }
+
+    // Update order summary
+    function updateWaiterSummary() {
+      const orderItemsDiv = document.getElementById('waiterOrderItems');
+      const totalSpan = document.getElementById('waiterTotal');
+
+      const allInputs = document.querySelectorAll('.waiter-qty-input');
+      let orderHTML = '';
+      let total = 0;
+      let hasItems = false;
+
+      allInputs.forEach(input => {
+        const qty = parseInt(input.value) || 0;
+        if (qty > 0) {
+          hasItems = true;
+          const name = input.dataset.name;
+          const price = parseFloat(input.dataset.price);
+          const itemTotal = qty * price;
+          total += itemTotal;
+
+          orderHTML += `
+            <div class="waiter-order-row">
+              <span class="order-item-name">${name}</span>
+              <span class="order-item-qty">×${qty}</span>
+              <span class="order-item-price">${itemTotal} ج</span>
+            </div>
+          `;
+        }
+      });
+
+      if (hasItems) {
+        orderItemsDiv.innerHTML = orderHTML;
+      } else {
+        orderItemsDiv.innerHTML = '<p class="empty-order">لم تقم بإضافة أي طلبات بعد</p>';
+      }
+
+      totalSpan.textContent = `${total} جنيه`;
+    }
+
+    // Submit order
+    async function submitWaiterOrder() {
+      const tableNumber = document.getElementById('tableNumber').value.trim();
+      const customerNotes = document.getElementById('customerNotes').value.trim();
+
+      if (!tableNumber) {
+        alert('⚠️ من فضلك أدخل رقم الترابيزة');
+        document.getElementById('tableNumber').focus();
+        return;
+      }
+
+      const allInputs = document.querySelectorAll('.waiter-qty-input');
+      const cart = [];
+      let total = 0;
+
+      allInputs.forEach(input => {
+        const qty = parseInt(input.value) || 0;
+        if (qty > 0) {
+          const name = input.dataset.name;
+          const price = parseFloat(input.dataset.price);
+          const image = input.dataset.image;
+
+          cart.push({
+            name: name,
+            price: price,
+            quantity: qty,
+            image: image
+          });
+
+          total += qty * price;
+        }
+      });
+
+      if (cart.length === 0) {
+        alert('⚠️ من فضلك اختر على الأقل طبق واحد');
+        return;
+      }
+
+      // تجهيز البيانات حسب الـ Model
+      const orderData = {
+        address: `${tableNumber}`,
+        cart: cart,
+        total: total,
+      };
+
+      // إضافة الملاحظات إذا كانت موجودة
+      if (customerNotes) {
+        orderData.notes = customerNotes;
+      }
+
+      console.log('Order Data:', orderData);
+
+      try {
+        // إرسال الطلب للـ API
+        const response = await fetch('/api/v1/order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(orderData)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          console.log('Order sent successfully:', data);
+
+          // Show success modal
+          document.getElementById('modalOrderNumber').textContent = data.data.numberOrder || 'جديد';
+          document.getElementById('modalTableNumber').textContent = tableNumber;
+          document.getElementById('modalTotal').textContent = total;
+          document.getElementById('waiterSuccessModal').classList.add('show');
+
+          // Reset form after 2 seconds
+          setTimeout(() => {
+            resetWaiterForm();
+          }, 2000);
+        } else {
+          alert('❌ حدث خطأ: ' + data.message);
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ حدث خطأ أثناء إرسال الطلب. من فضلك حاول مرة أخرى.');
+      }
+    }
+
+    // Close modal
+    function closeWaiterModal() {
+      document.getElementById('waiterSuccessModal').classList.remove('show');
+    }
+
+    // Reset form
+    function resetWaiterForm() {
+      document.getElementById('tableNumber').value = '';
+      document.getElementById('customerNotes').value = '';
+      document.querySelectorAll('.waiter-qty-input').forEach(input => {
+        input.value = '0';
+      });
+      updateWaiterSummary();
+    }
+
+    // Click outside modal to close
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('waiterSuccessModal');
+      if (e.target === modal) {
+        closeWaiterModal();
+      }
+    });
