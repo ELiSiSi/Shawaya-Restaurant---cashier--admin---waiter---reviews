@@ -17,53 +17,17 @@ import mealRouter from './routes/mealRouter.js';
 import offerRouter from './routes/offerRouter.js';
 import orderRouter from './routes/orderRouter.js';
 import viewRouter from './routes/viewRouter.js';
-import reviewRouter from './routes/reviewRouter.js';
+import reviewRouter    from './routes/reviewRouter.js';
 import AppError from './utils/appError.js';
 
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 const port = process.env.PORT || 3000;
 
-// ✅ Global caching للـ mongoose في serverless
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
-
-async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-    };
-
-    cached.promise = mongoose.connect(MONGO_URI, opts).then((mongoose) => {
-      console.log('✅ Connected to MongoDB');
-      return mongoose;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    console.error('❌ MongoDB Error:', e);
-    throw e;
-  }
-
-  return cached.conn;
-}
-
 // حل مشكلة __dirname في ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+console.log('🔍 VIEWS DIR =', app.get('views'));
 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(express.json());
@@ -94,6 +58,9 @@ app.use(mongoSanitize());
 // 3) تنظيف البيانات من XSS Attack
 app.use(xss());
 
+//-----------------------------------------------------------------------------------------
+// app.use(morgan('dev'));
+
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
@@ -105,24 +72,15 @@ app.use(hpp());
 //-----------------------------------------------------------------------------------------
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
+console.log('VIEWS PATH 👉', app.get('views'));
 
 // تحميل أسرع للصفحات استهلاك إنترنت أقل
 app.use(compression());
 
 //--------------------------------------------------------------------------------------------
-// ✅ Middleware للاتصال بقاعدة البيانات قبل كل request
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (error) {
-    next(new AppError('Database connection failed', 500));
-  }
-});
-
-//--------------------------------------------------------------------------------------------
 // =================================== The Routes ============================================
 //--------------------------------------------------------------------------------------------
+// ✅ Middleware لتمرير Stripe key لكل الصفحات
 
 app.get('/.well-known/*', (req, res) => res.status(204).end());
 
@@ -132,6 +90,26 @@ app.use('/api/v1/order', orderRouter);
 app.use('/api/v1/review', reviewRouter);
 app.use('/', viewRouter);
 app.use('/admin', adminRouter);
+
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  // For rendered pages
+  if (req.originalUrl.startsWith('/')) {
+    return res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      message: err.message,
+      error: err,
+    });
+  }
+
+  // For API routes
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+  });
+});
 
 // 404 handler للـ routes اللي مش موجودة
 app.all('*', (req, res, next) => {
@@ -159,24 +137,27 @@ app.use((err, req, res, next) => {
 
 //----------------------------------------------------------------------------------------------------------
 process.on('unhandledRejection', (err) => {
-  console.log('❌ Unhandled Rejection 💥');
+  console.log('❌ Unhandled Rejection 💥 Shutting down...');
   console.log(err.name, err.message);
+  process.exit(1);
 });
 
 process.on('uncaughtException', (err) => {
-  console.log('❌ Uncaught Exception 💥');
+  console.log('❌ Uncaught Exception 💥 Shutting down...');
   console.log(err.name, err.message);
+  process.exit(1);
 });
 
 //-----------------------------------------------------------------------------------------
-// ✅ للـ local development فقط
-if (process.env.NODE_ENV !== 'production') {
-  connectDB().then(() => {
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log('✅ Connected to MongoDB');
+
     app.listen(port, () => {
       console.log(`🚀 App listening at http://localhost:${port}`);
     });
-  });
-}
+  })
+  .catch((err) => console.error('❌ MongoDB Error:', err));
 
-// ✅ للـ Vercel serverless
 export default app;
