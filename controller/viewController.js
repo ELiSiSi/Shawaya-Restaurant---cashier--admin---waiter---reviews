@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 import Meal from '../models/mealModel.js';
 import Offer from '../models/offerModel.js';
-import AppError from '../utils/appError.js';
+ import AppError from '../utils/appError.js';
 
 
 // homepage -----------------------------------------------------------------------------------
@@ -57,6 +57,11 @@ export const cartpage = async (req, res, next) => {
   } catch (err) {
     return next(new AppError('No document found with that ID', 404));
   }
+};
+
+// reviewPage -----------------------------------------------------------------------------------
+export const reviewPage = (req, res) => {
+  res.render('review', { title: 'Review' });
 };
 
 

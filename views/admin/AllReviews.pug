@@ -1,0 +1,387 @@
+extends base
+
+block content
+  .container
+    h1 📊 تقييمات العملاء
+
+    // ===== FILTER =====
+    .filter-section
+      .filter-inputs
+        .filter-group
+          label(for="startDate") من تاريخ
+          input#startDate.date-input(type="date")
+
+        .filter-group
+          label(for="endDate") إلى تاريخ
+          input#endDate.date-input(type="date")
+
+        .filter-group
+          label(for="searchName") البحث بالاسم
+          input#searchName.search-input(type="text" placeholder="ابحث بالاسم...")
+
+        .filter-group
+          label(for="searchPhone") البحث بالهاتف
+          input#searchPhone.search-input(type="text" placeholder="ابحث بالهاتف...")
+
+        .filter-group
+          label(for="tableFilter") رقم الطاولة
+          input#tableFilter.search-input(type="text" placeholder="رقم الطاولة...")
+
+        .filter-group
+          label(for="ratingFilter") الحد الأدنى للتقييم
+          select#ratingFilter.rating-select
+            option(value="") الكل
+            option(value="8") ممتاز (8+)
+            option(value="6") جيد (6+)
+            option(value="4") مقبول (4+)
+            option(value="0") ضعيف (أقل من 4)
+
+        button#filterBtn.filter-btn بحث
+        button#resetBtn.reset-btn إعادة تعيين
+
+
+    // ===== DELETE =====
+    .delete-section
+      form#deleteForm(action="/api/deleteall?_method=DELETE" method="POST")
+        button.delete-all-btn(type="submit") 🗑️ حذف جميع التقييمات
+
+    // ===== STATS =====
+    .stats
+      .stat-card
+        h3 📈 إجمالي التقييمات
+        p.stat-number#totalCount #{reviews.length}
+
+      .stat-card
+        h3 ⭐ متوسط التقييمات
+        p.stat-number#avgRating
+          if reviews.length > 0
+            - const totalAvg = reviews.reduce((sum, r) => sum + (r.cashier + r.cleanliness + r.foodQuality + r.service) / 4, 0) / reviews.length
+            | #{totalAvg.toFixed(1)}/10
+          else
+            | -
+
+      .stat-card
+        h3 💰 متوسط الكاشير
+        p.stat-number#avgCashier
+          if reviews.length > 0
+            - const cashierAvg = reviews.reduce((sum, r) => sum + r.cashier, 0) / reviews.length
+            | #{cashierAvg.toFixed(1)}/10
+          else
+            | -
+
+      .stat-card
+        h3 🧹 متوسط النظافة
+        p.stat-number#avgCleanliness
+          if reviews.length > 0
+            - const cleanAvg = reviews.reduce((sum, r) => sum + r.cleanliness, 0) / reviews.length
+            | #{cleanAvg.toFixed(1)}/10
+          else
+            | -
+
+      .stat-card
+        h3 🍽️ متوسط جودة الطعام
+        p.stat-number#avgFood
+          if reviews.length > 0
+            - const foodAvg = reviews.reduce((sum, r) => sum + r.foodQuality, 0) / reviews.length
+            | #{foodAvg.toFixed(1)}/10
+          else
+            | -
+
+      .stat-card
+        h3 🤝 متوسط الخدمة
+        p.stat-number#avgService
+          if reviews.length > 0
+            - const serviceAvg = reviews.reduce((sum, r) => sum + r.service, 0) / reviews.length
+            | #{serviceAvg.toFixed(1)}/10
+          else
+            | -
+
+    // ===== TABLE =====
+    .table-wrapper
+      table.ratings-table
+        thead
+          tr
+            th #
+            th.sortable(data-sort="name") الاسم ↕
+            th رقم الهاتف
+            th.sortable(data-sort="table") رقم الطاولة ↕
+            th.sortable(data-sort="cashier") الكاشير ↕
+            th.sortable(data-sort="cleanliness") النظافة ↕
+            th.sortable(data-sort="food") جودة الطعام ↕
+            th.sortable(data-sort="service") الخدمة ↕
+            th.sortable(data-sort="average") المتوسط ↕
+            th ملاحظات
+            th.sortable(data-sort="date") التاريخ ↕
+
+
+        tbody#ratingsTableBody
+          if reviews.length === 0
+            tr
+              td.no-data(colspan="12") لا توجد تقييمات حتى الآن
+          else
+            each review, index in reviews
+              - const avg = ((review.cashier + review.cleanliness + review.foodQuality + review.service) / 4).toFixed(1)
+              - const ratingClass = avg >= 8 ? 'excellent' : avg >= 6 ? 'good' : 'poor'
+              tr(class=ratingClass data-date=review.createdAt data-id=review._id)
+                td #{index + 1}
+                td.name-cell(data-name=review.name)
+                  strong #{review.name}
+                td.phone-cell(data-phone=review.phone || '') #{review.phone || '-'}
+                td(data-table=review.numGTables)
+                  span.badge #{review.numGTables}
+                td(data-cashier=review.cashier)
+                  span.rating-value #{review.cashier}/10
+                td(data-cleanliness=review.cleanliness)
+                  span.rating-value #{review.cleanliness}/10
+                td(data-food=review.foodQuality)
+                  span.rating-value #{review.foodQuality}/10
+                td(data-service=review.service)
+                  span.rating-value #{review.service}/10
+                td(data-average=avg)
+                  span.average(class=ratingClass) #{avg}
+                td.notes-cell #{review.notes || '-'}
+                td.date-cell #{new Date(review.createdAt).toLocaleDateString('ar-EG')}
+
+
+  // ===== SCRIPT (INLINE) =====
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const filterBtn = document.getElementById('filterBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const startDateInput = document.getElementById('startDate');
+      const endDateInput = document.getElementById('endDate');
+      const searchNameInput = document.getElementById('searchName');
+      const searchPhoneInput = document.getElementById('searchPhone');
+      const tableFilterInput = document.getElementById('tableFilter');
+      const ratingFilterSelect = document.getElementById('ratingFilter');
+      const tableBody = document.getElementById('ratingsTableBody');
+      const totalCount = document.getElementById('totalCount');
+      const avgRating = document.getElementById('avgRating');
+      const avgCashier = document.getElementById('avgCashier');
+      const avgCleanliness = document.getElementById('avgCleanliness');
+      const avgFood = document.getElementById('avgFood');
+      const avgService = document.getElementById('avgService');
+      const deleteForm = document.getElementById('deleteForm');
+
+      if (!tableBody || !totalCount || !avgRating) return;
+
+      const originalTotal = totalCount.textContent.trim();
+      const originalAvg = avgRating.textContent.trim();
+      const originalCashier = avgCashier.textContent.trim();
+      const originalCleanliness = avgCleanliness.textContent.trim();
+      const originalFood = avgFood.textContent.trim();
+      const originalService = avgService.textContent.trim();
+      const originalHTML = tableBody.innerHTML;
+
+      const restore = () => {
+        tableBody.innerHTML = originalHTML;
+        attachDeleteListeners();
+      };
+
+      const applyFilter = () => {
+        const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+        const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+        if (endDate) endDate.setHours(23, 59, 59, 999);
+
+        const searchName = searchNameInput.value.toLowerCase().trim();
+        const searchPhone = searchPhoneInput.value.toLowerCase().trim();
+        const tableNumber = tableFilterInput.value.trim();
+        const minRating = ratingFilterSelect.value ? parseFloat(ratingFilterSelect.value) : null;
+
+        restore();
+
+        const rows = Array.from(tableBody.querySelectorAll('tr')).filter(
+          row => !row.querySelector('.no-data')
+        );
+
+        let count = 0;
+        let sumTotal = 0;
+        let sumCashier = 0;
+        let sumCleanliness = 0;
+        let sumFood = 0;
+        let sumService = 0;
+
+        rows.forEach(row => {
+          const rowDate = new Date(row.dataset.date);
+          const rowName = row.querySelector('.name-cell')?.dataset.name?.toLowerCase() || '';
+          const rowPhone = row.querySelector('.phone-cell')?.dataset.phone?.toLowerCase() || '';
+          const rowTable = row.querySelector('[data-table]')?.dataset.table || '';
+          const rowAvg = parseFloat(row.querySelector('.average')?.textContent) || 0;
+
+          const dateMatch = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
+          const nameMatch = !searchName || rowName.includes(searchName);
+          const phoneMatch = !searchPhone || rowPhone.includes(searchPhone);
+          const tableMatch = !tableNumber || rowTable === tableNumber;
+          const ratingMatch = minRating === null || (
+            ratingFilterSelect.value === "0" ? rowAvg < 4 : rowAvg >= minRating
+          );
+
+          const show = dateMatch && nameMatch && phoneMatch && tableMatch && ratingMatch;
+
+          if (show) {
+            count++;
+            sumTotal += rowAvg;
+            sumCashier += parseFloat(row.querySelector('[data-cashier]')?.dataset.cashier) || 0;
+            sumCleanliness += parseFloat(row.querySelector('[data-cleanliness]')?.dataset.cleanliness) || 0;
+            sumFood += parseFloat(row.querySelector('[data-food]')?.dataset.food) || 0;
+            sumService += parseFloat(row.querySelector('[data-service]')?.dataset.service) || 0;
+          } else {
+            row.remove();
+          }
+        });
+
+        totalCount.textContent = count;
+        avgRating.textContent = count ? (sumTotal / count).toFixed(1) + '/10' : '-';
+        avgCashier.textContent = count ? (sumCashier / count).toFixed(1) + '/10' : '-';
+        avgCleanliness.textContent = count ? (sumCleanliness / count).toFixed(1) + '/10' : '-';
+        avgFood.textContent = count ? (sumFood / count).toFixed(1) + '/10' : '-';
+        avgService.textContent = count ? (sumService / count).toFixed(1) + '/10' : '-';
+
+        if (!count) {
+          tableBody.innerHTML =
+            '<tr><td colspan="12" class="no-data">لا توجد تقييمات تطابق معايير البحث</td></tr>';
+        }
+      };
+
+      filterBtn.addEventListener('click', applyFilter);
+
+      resetBtn.addEventListener('click', () => {
+        startDateInput.value = '';
+        endDateInput.value = '';
+        searchNameInput.value = '';
+        searchPhoneInput.value = '';
+        tableFilterInput.value = '';
+        ratingFilterSelect.value = '';
+        restore();
+        totalCount.textContent = originalTotal;
+        avgRating.textContent = originalAvg;
+        avgCashier.textContent = originalCashier;
+        avgCleanliness.textContent = originalCleanliness;
+        avgFood.textContent = originalFood;
+        avgService.textContent = originalService;
+      });
+
+      // Export to Excel
+      exportBtn.addEventListener('click', () => {
+        const rows = Array.from(tableBody.querySelectorAll('tr')).filter(
+          row => !row.querySelector('.no-data')
+        );
+
+        if (!rows.length) {
+          alert('لا توجد بيانات للتصدير');
+          return;
+        }
+
+        let csv = 'الاسم,رقم الهاتف,رقم الطاولة,الكاشير,النظافة,جودة الطعام,الخدمة,المتوسط,ملاحظات,التاريخ\n';
+
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          const data = [
+            cells[1]?.textContent.trim(),
+            cells[2]?.textContent.trim(),
+            cells[3]?.textContent.trim(),
+            cells[4]?.textContent.trim(),
+            cells[5]?.textContent.trim(),
+            cells[6]?.textContent.trim(),
+            cells[7]?.textContent.trim(),
+            cells[8]?.textContent.trim(),
+            cells[9]?.textContent.trim(),
+            cells[10]?.textContent.trim()
+          ];
+          csv += data.join(',') + '\n';
+        });
+
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `تقييمات_العملاء_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+      });
+
+      // Sorting functionality
+      document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', () => {
+          const sortType = header.dataset.sort;
+          const rows = Array.from(tableBody.querySelectorAll('tr')).filter(
+            row => !row.querySelector('.no-data')
+          );
+
+          rows.sort((a, b) => {
+            let aVal, bVal;
+
+            switch(sortType) {
+              case 'name':
+                aVal = a.querySelector('.name-cell')?.textContent.trim().toLowerCase();
+                bVal = b.querySelector('.name-cell')?.textContent.trim().toLowerCase();
+                return aVal > bVal ? 1 : -1;
+              case 'table':
+                aVal = parseInt(a.querySelector('[data-table]')?.dataset.table) || 0;
+                bVal = parseInt(b.querySelector('[data-table]')?.dataset.table) || 0;
+                return aVal - bVal;
+              case 'cashier':
+                aVal = parseFloat(a.querySelector('[data-cashier]')?.dataset.cashier) || 0;
+                bVal = parseFloat(b.querySelector('[data-cashier]')?.dataset.cashier) || 0;
+                return bVal - aVal;
+              case 'cleanliness':
+                aVal = parseFloat(a.querySelector('[data-cleanliness]')?.dataset.cleanliness) || 0;
+                bVal = parseFloat(b.querySelector('[data-cleanliness]')?.dataset.cleanliness) || 0;
+                return bVal - aVal;
+              case 'food':
+                aVal = parseFloat(a.querySelector('[data-food]')?.dataset.food) || 0;
+                bVal = parseFloat(b.querySelector('[data-food]')?.dataset.food) || 0;
+                return bVal - aVal;
+              case 'service':
+                aVal = parseFloat(a.querySelector('[data-service]')?.dataset.service) || 0;
+                bVal = parseFloat(b.querySelector('[data-service]')?.dataset.service) || 0;
+                return bVal - aVal;
+              case 'average':
+                aVal = parseFloat(a.querySelector('[data-average]')?.dataset.average) || 0;
+                bVal = parseFloat(b.querySelector('[data-average]')?.dataset.average) || 0;
+                return bVal - aVal;
+              case 'date':
+                aVal = new Date(a.dataset.date);
+                bVal = new Date(b.dataset.date);
+                return bVal - aVal;
+            }
+          });
+
+          tableBody.innerHTML = '';
+          rows.forEach((row, index) => {
+            row.querySelector('td').textContent = index + 1;
+            tableBody.appendChild(row);
+          });
+          attachDeleteListeners();
+        });
+      });
+
+      // Delete single review
+      function attachDeleteListeners() {
+        document.querySelectorAll('.delete-single-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            if (!confirm('هل أنت متأكد من حذف هذا التقييم؟')) return;
+
+            const id = e.target.dataset.id;
+            try {
+              const response = await fetch(`/api/reviews/${id}`, { method: 'DELETE' });
+              if (response.ok) {
+                location.reload();
+              } else {
+                alert('فشل الحذف');
+              }
+            } catch (error) {
+              alert('حدث خطأ');
+            }
+          });
+        });
+      }
+
+      attachDeleteListeners();
+
+      // Confirm delete all
+      deleteForm.addEventListener('submit', (e) => {
+        if (!confirm('⚠️ هل أنت متأكد من حذف جميع التقييمات؟ هذا الإجراء لا يمكن التراجع عنه!')) {
+          e.preventDefault();
+        }
+      });
+    });

@@ -1,56 +1,155 @@
 doctype html
 html(lang="ar" dir="rtl")
   head
+    //- Basic Meta Tags
     meta(charset="UTF-8")
     meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title  شواية- #{title}
-    link(rel="stylesheet" href="/css/style.css")
+    meta(http-equiv="X-UA-Compatible" content="IE=edge")
+
+    //- SEO Meta Tags
+    title= pageTitle || 'يا كبدة - Ya Kebda | أفضل شواية في مصر | طلبات أونلاين'
+    meta(name="description" content=pageDescription || 'يا كبدة - مطعم متخصص في الكبدة والشواء المصري الأصيل. اطلب الآن أونلاين كبدة إسكندراني، شاورما، كفتة، وكل أنواع المشويات. توصيل سريع في العزازية ومصر.')
+    meta(name="keywords" content="كبدة، كبدة إسكندراني، شواء، شواية، مطعم مصري، كفتة، شاورما، طلبات أونلاين، توصيل طعام، يا كبدة، Ya Kebda، العزازية، مصر، مشويات، لحوم، وجبات سريعة")
+    meta(name="author" content="يا كبدة - Ya Kebda")
+    meta(name="robots" content="index, follow")
+    meta(name="language" content="Arabic")
+    meta(name="revisit-after" content="7 days")
+
+    //- Open Graph Meta Tags (Facebook, LinkedIn)
+    meta(property="og:type" content="website")
+    meta(property="og:title" content=pageTitle || 'يا كبدة - Ya Kebda | أفضل شواية في مصر')
+    meta(property="og:description" content=pageDescription || 'مطعم متخصص في الكبدة والشواء المصري الأصيل. اطلب الآن!')
+    meta(property="og:image" content="/img/logo.png")
+    meta(property="og:url" content="https://yourdomain.com")
+    meta(property="og:site_name" content="يا كبدة - Ya Kebda")
+    meta(property="og:locale" content="ar_EG")
+
+    //- Twitter Card Meta Tags
+    meta(name="twitter:card" content="summary_large_image")
+    meta(name="twitter:title" content=pageTitle || 'يا كبدة - Ya Kebda')
+    meta(name="twitter:description" content=pageDescription || 'أفضل كبدة ومشويات في مصر')
+    meta(name="twitter:image" content="/img/logo.png")
+
+    //- Canonical URL
+    link(rel="canonical" href=canonicalUrl || 'https://yourdomain.com')
+
+    //- Favicon
     link(rel="icon" type="image/png" href="/img/logo.png")
+    link(rel="apple-touch-icon" href="/img/logo.png")
+
+    //- Stylesheets
+    link(rel="stylesheet" href="/css/style.css")
+
+    //- Preconnect for Performance
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+
+    //- Schema.org Structured Data (JSON-LD)
+    script(type="application/ld+json").
+      {
+        "@context": "https://schema.org",
+        "@type": "Restaurant",
+        "name": "يا كبدة - Ya Kebda",
+        "image": "/img/logo.png",
+        "description": "مطعم متخصص في الكبدة والشواء المصري الأصيل",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "العزازية",
+          "addressLocality": "العزازية",
+          "addressCountry": "EG"
+        },
+        "telephone": "+20 123 456 7890",
+        "email": "ramym4665@gmail.com",
+        "servesCuisine": "مصري، شواء، كبدة",
+        "priceRange": "$$",
+        "url": "https://yourdomain.com",
+        "sameAs": [
+          "https://facebook.com/yakebda",
+          "https://instagram.com/yakebda"
+        ],
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday"
+            ],
+            "opens": "10:00",
+            "closes": "23:00"
+          }
+        ]
+      }
 
   body
-    // Header
-    header.header
+    //- Header with Semantic HTML
+    header.header(role="banner")
       .container
         .nav-wrapper
-          .logo
-            img(src="/img/logo.png" alt=""  )
+          .logo(itemscope itemtype="https://schema.org/Organization")
+            a(href="/" itemprop="url")
+              img(src="/img/logo.png" alt="يا كبدة - Ya Kebda - أفضل شواية في مصر" itemprop="logo" width="120" height="120")
             .logo-text
-              p أسرع واطلب نقعة جديدة
-          nav.nav
-           a(href="/" class=(title === 'Home' ? 'active' : '')) الرئيسية
-           a(href="/menu" class=(title === 'Menu' ? 'active' : '')) المنيو
-           a(href="/offers" class=(title === 'Offers' ? 'active' : '')) العروض
-           a.cart-link(href="/cart" class=(title === 'Cart' ? 'active' : ''))
-              svg(width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2")
+              p(itemprop="slogan") أسرع واطلب نقعة جديدة
+
+          nav.nav(role="navigation" aria-label="القائمة الرئيسية")
+            a(href="/" class=(title === 'Home' ? 'active' : '') aria-label="الصفحة الرئيسية") الرئيسية
+            a(href="/menu" class=(title === 'Menu' ? 'active' : '') aria-label="قائمة الطعام") المنيو
+            a(href="/offers" class=(title === 'Offers' ? 'active' : '') aria-label="العروض الخاصة") العروض
+            a.cart-link(href="/cart" class=(title === 'Cart' ? 'active' : '') aria-label="سلة التسوق")
+              svg(width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true")
                 circle(cx="9" cy="21" r="1")
                 circle(cx="20" cy="21" r="1")
                 path(d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6")
-              span.cart-count 0
-          //- button.mobile-menu-btn
-          //-   span
-          //-   span
-          //-   span
+              span.cart-count(aria-live="polite") 0
 
-    block content
-    // Footer
-    footer.footer
+    //- Main Content
+    main.main-content(role="main")
+      block content
+
+    //- Footer with Semantic HTML
+    footer.footer(role="contentinfo" itemscope itemtype="https://schema.org/Restaurant")
       .container
         .footer-content
           .footer-logo
-            img(src="/img/logo.png" alt="Ya Kebda")
-            p أسرع واطلب نقعة جديدة
+            img(src="/img/logo.png" alt="يا كبدة - Ya Kebda" itemprop="logo" width="100" height="100")
+            p(itemprop="description") أسرع واطلب نقعة جديدة
+
           .footer-links
             h4 روابط سريعة
-            a(href="/") الرئيسية
-            a(href="/menu") المنيو
-            a(href="/offers") العروض
-            a(href="/cart") السلة
+            nav(aria-label="روابط الفوتر")
+              a(href="/" aria-label="الرئيسية") الرئيسية
+              a(href="/menu" aria-label="المنيو") المنيو
+              a(href="/offers" aria-label="العروض") العروض
+              a(href="/cart" aria-label="السلة") السلة
+              a(href="/review" aria-label="التقيم")  التقيم
+
           .footer-contact
             h4 تواصل معنا
-            p 📞 +20 123 456 7890
-            p 📧ramym4665@gmail.com
-            p 📍  العزازيه ، مصر
-        .footer-bottom
-          p © 2024 يا كبدة - Ya Kebda. جميع الحقوق محفوظة.
 
-    script(src="/js/script.js")
+            p(itemprop="telephone")
+              a(href="tel:+201234567890" aria-label="اتصل بنا") 📞 +20 123 456 7890
+
+            p(itemprop="email")
+              a(href="mailto:ramym4665@gmail.com" aria-label="راسلنا عبر البريد") 📧 ramym4665@gmail.com
+
+            p(itemprop="address" itemscope itemtype="https://schema.org/PostalAddress")
+              span(itemprop="addressLocality") 📍 العزازية
+              | ،
+              span(itemprop="addressCountry") مصر
+
+            p
+              a(href="https://facebook.com/yakebda" target="_blank" rel="noopener noreferrer" itemprop="sameAs" aria-label="تابعنا على فيسبوك") فيسبوك
+
+            p
+              a(href="https://instagram.com/yakebda" target="_blank" rel="noopener noreferrer" itemprop="sameAs" aria-label="تابعنا على إنستجرام") إنستجرام
+
+        .footer-bottom
+          p © 2026 شواية . جميع الحقوق محفوظة.
+
+    //- Scripts
+    script(src="/js/script.js" defer)

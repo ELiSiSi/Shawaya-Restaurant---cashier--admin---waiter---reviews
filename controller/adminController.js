@@ -1,6 +1,7 @@
 import Meal from '../models/mealModel.js';
 import Offer from '../models/offerModel.js';
 import Order from '../models/orderModel.js';
+import Review from '../models/reviewModel.js';
 import AppError from '../utils/appError.js';
 
 // loginAdmin -----------------------------------------------------------------------------------
@@ -101,4 +102,10 @@ export const cashierPage = async (req, res, next) => {
   } catch (err) {
     return next(new AppError('Error fetching orders', 404));
   }
+};
+
+// AllReviews -----------------------------------------------------------------------------------
+export const AllReviews = async (req, res) => {
+  const reviews = await Review.find({}).sort({ createdAt: -1 });
+  res.render('admin/AllReviews', { reviews , title: 'All Reviews' });
 };

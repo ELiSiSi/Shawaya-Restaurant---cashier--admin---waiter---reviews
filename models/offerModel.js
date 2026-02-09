@@ -31,11 +31,7 @@ const offerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    category: {
-      type: String,
-      required: [true, 'Offer must have a category'],
-      trim: true,
-    },
+
   },
   { timestamps: true }
 );

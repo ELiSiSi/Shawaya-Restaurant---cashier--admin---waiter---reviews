@@ -17,6 +17,7 @@ import mealRouter from './routes/mealRouter.js';
 import offerRouter from './routes/offerRouter.js';
 import orderRouter from './routes/orderRouter.js';
 import viewRouter from './routes/viewRouter.js';
+import reviewRouter    from './routes/reviewRouter.js';
 import AppError from './utils/appError.js';
 
 const MONGO_URI = process.env.MONGO_URI;
@@ -86,6 +87,7 @@ app.get('/.well-known/*', (req, res) => res.status(204).end());
 app.use('/api/v1/meal', mealRouter);
 app.use('/api/v1/offer', offerRouter);
 app.use('/api/v1/order', orderRouter);
+app.use('/api/v1/review', reviewRouter);
 app.use('/', viewRouter);
 app.use('/admin', adminRouter);
 

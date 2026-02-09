@@ -7,6 +7,7 @@ block content
         .invoice
           .invoice-header
             h2 مطعم شوية
+            p.invoice-date 📅 التاريخ: #{new Date(order.createdAt || Date.now()).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
             p.invoice-number رقم الطلب: #{order.numberOrder || 'غير متوفر'}
 
           .invoice-section
@@ -66,6 +67,9 @@ block content
                 | #{order.status || 'قيد الانتظار'}
 
           .invoice-actions
+            button.action-btn.print(type="button" data-id=order._id)
+              i.fa.fa-print
+              | طباعة
             button.action-btn.done(type="button" data-id=order._id)
               i.fa.fa-check
               | تم الدفع
@@ -83,8 +87,14 @@ block content
       if (!btn) return;
 
       const orderId = btn.dataset.id;
-      let paying = 'pending';
 
+      // معالجة زر الطباعة
+      if (btn.classList.contains('print')) {
+        printInvoice(orderId);
+        return;
+      }
+
+      let paying = 'pending';
       if (btn.classList.contains('done')) paying = true;
       if (btn.classList.contains('cancel')) paying = false;
 
@@ -104,3 +114,164 @@ block content
         alert('مشكلة في الاتصال بالسيرفر');
       }
     });
+
+    // دالة الطباعة
+    function printInvoice(orderId) {
+      const invoice = document.querySelector(`[data-id="${orderId}"]`).closest('.invoice');
+
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl" lang="ar">
+        <head>
+          <meta charset="UTF-8">
+          <title>فاتورة الطلب</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              font-family: "Cairo", sans-serif;
+            }
+            body {
+              padding: 20px;
+              background: white;
+              text-align: right;
+              color: #000;
+            }
+            .invoice {
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            .invoice-header {
+              text-align: center;
+              border-bottom: 3px solid #FF2400;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .invoice-header h2 {
+              font-size: 32px;
+              color: #FF2400;
+              margin-bottom: 10px;
+              text-align: center;
+            }
+            .invoice-date, .invoice-number {
+              text-align: center;
+              font-size: 14px;
+              color: #666;
+              margin: 5px 0;
+            }
+            .invoice-section {
+              text-align: right;
+              margin: 25px 0;
+              padding: 20px;
+              border: 2px solid #eee;
+              border-radius: 10px;
+            }
+            .invoice-section h3 {
+              text-align: right;
+              color: #FF2400;
+              margin-bottom: 15px;
+              font-size: 20px;
+            }
+            .invoice-row {
+              display: flex;
+              justify-content: flex-start;
+              gap: 10px;
+              padding: 8px 0;
+              border-bottom: 1px dotted #ddd;
+            }
+            .label {
+              font-weight: bold;
+              text-align: right;
+              color: #333;
+            }
+            .value {
+              color: #666;
+            }
+            .invoice-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 15px;
+            }
+            .invoice-table th {
+              background: #FF2400;
+              color: white;
+              padding: 12px;
+              text-align: center;
+            }
+            .invoice-table td {
+              padding: 12px;
+              text-align: center;
+              border-bottom: 1px solid #eee;
+            }
+            .invoice-footer {
+              margin-top: 30px;
+              padding: 20px;
+              background: #f9f9f9;
+              border-radius: 10px;
+            }
+            .invoice-total {
+              display: flex;
+              justify-content: flex-start;
+              gap: 10px;
+              font-size: 24px;
+              font-weight: bold;
+              color: #FF2400;
+              margin-bottom: 15px;
+            }
+            .invoice-status {
+              display: flex;
+              justify-content: flex-start;
+              gap: 10px;
+              align-items: center;
+            }
+            .status-badge {
+              padding: 8px 20px;
+              border-radius: 20px;
+              font-weight: bold;
+            }
+            .status-badge.pending { background-color: #ffc107; color: #222; }
+            .status-badge.processing { background-color: #0dcaf0; color: white; }
+            .status-badge.delivered, .status-badge.done { background-color: #28a745; color: white; }
+            .status-badge.cancelled, .status-badge.cancel { background-color: #dc3545; color: white; }
+            .invoice-notes {
+              text-align: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 2px dashed #ccc;
+              color: #666;
+            }
+            .invoice-notes p {
+              margin: 5px 0;
+            }
+            .invoice-actions {
+              display: none !important;
+            }
+            @media print {
+              body {
+                padding: 0;
+              }
+              .invoice-section {
+                page-break-inside: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${invoice.outerHTML}
+          <div class="invoice-notes">
+            <p>🙏 شكراً لتعاملكم معنا</p>
+            <p>نتمنى لكم تجربة ممتعة وطعام شهي</p>
+          </div>
+        </body>
+        </html>
+      `);
+
+      printWindow.document.close();
+      printWindow.focus();
+
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }

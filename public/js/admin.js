@@ -153,7 +153,7 @@ function showEditMealForm(meal) {
 function showEditOfferForm(offer) {
   const modal = document.getElementById('editOfferModal');
   document.getElementById('editOfferId').value = offer._id;
-  document.getElementById('editOfferTitle').value = offer.title;
+  document.getElementById('editOfferTitle').value = offer.name;
   document.getElementById('editOfferPrice').value = offer.price;
   document.getElementById('editOfferNewPrice').value = offer.newprice || '';
   document.getElementById('editOfferDescription').value =
@@ -236,7 +236,7 @@ async function updateOffer(event) {
 
   const id = document.getElementById('editOfferId').value;
   const data = {
-    title: document.getElementById('editOfferTitle').value,
+    name: document.getElementById('editOfferTitle').value,
     price: parseFloat(document.getElementById('editOfferPrice').value),
     description: document.getElementById('editOfferDescription').value,
     image: document.getElementById('editOfferImage').value,
@@ -313,7 +313,7 @@ async function addOffer(event) {
   event.preventDefault();
 
   const data = {
-    title: document.getElementById('addOfferTitle').value,
+    name: document.getElementById('addOfferTitle').value,
     price: parseFloat(document.getElementById('addOfferPrice').value),
     description: document.getElementById('addOfferDescription').value,
     image: document.getElementById('addOfferImage').value,
@@ -349,8 +349,6 @@ async function addOffer(event) {
     showMessage('حدث خطأ أثناء الإضافة', 'error');
   }
 }
-
-
 
 // عرض فاتورة الطلب
 async function showOrderInvoice(orderId) {
@@ -397,7 +395,7 @@ async function showOrderInvoice(orderId) {
             0
           )
         : order.total || 0;
-console.log('Order Status:', order.status);
+    console.log('Order Status:', order.status);
     // إنشاء محتوى الفاتورة
     const invoiceHTML = `
       <div class="invoice-header">
@@ -417,15 +415,15 @@ console.log('Order Status:', order.status);
       <div class="invoice-section">
         <h3>📍 بيانات العميل</h3>
         <div class="invoice-row">
-          <span class="label">الاسم:</span>
+          <span class="label">الاسم :  </span>
           <span class="value">${order.name || 'غير محدد'}</span>
         </div>
         <div class="invoice-row">
-          <span class="label">الهاتف:</span>
+          <span class="label"> الهاتف : </span>
           <span class="value">${order.number || 'غير محدد'}</span>
         </div>
         <div class="invoice-row">
-          <span class="label">العنوان:</span>
+          <span class="label">العنوان : </span>
           <span class="value">${order.address || 'غير محدد'}</span>
         </div>
       </div>
@@ -464,11 +462,11 @@ console.log('Order Status:', order.status);
 
       <div class="invoice-footer">
         <div class="invoice-total">
-          <span class="total-label">💰 الإجمالي الكلي:</span>
+          <span class="total-label">💰 الإجمالي الكلي :  </span>
           <span class="total-value">${calculatedTotal.toFixed(2)} جنيه</span>
         </div>
         <div class="invoice-status">
-          <span class="label">حالة الطلب:</span>
+          <span class="label">حالة الطلب : </span>
           <span class="status-badge" style="${statusStyle} padding: 6px 14px; border-radius: 6px; font-weight: bold; display: inline-block;">${statusText}</span>
         </div>
       </div>
@@ -486,8 +484,6 @@ console.log('Order Status:', order.status);
     showMessage('فشل في تحميل بيانات الطلب', 'error');
   }
 }
-
-
 
 // حذف طلب واحد
 async function deleteOrder(orderId) {
@@ -563,6 +559,8 @@ function printInvoice() {
         body {
           padding: 20px;
           background: white;
+            text-align: right;
+
           color: #000;
         }
         .invoice-header {
@@ -575,31 +573,45 @@ function printInvoice() {
           font-size: 32px;
           color: #FF2400;
           margin-bottom: 10px;
+            text-align: right;
+
         }
         .invoice-date, .invoice-number {
+          text-align: right;
+
           font-size: 14px;
           color: #666;
           margin: 5px 0;
         }
         .invoice-section {
+          text-align: right;
+
           margin: 25px 0;
           padding: 20px;
           border: 2px solid #eee;
           border-radius: 10px;
         }
         .invoice-section h3 {
+          text-align: right;
+
           color: #FF2400;
           margin-bottom: 15px;
           font-size: 20px;
         }
-        .invoice-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 10px 0;
-          border-bottom: 1px solid #f5f5f5;
-        }
+.invoice-row {
+  display: flex;
+  justify-content: flex-start; /* الاسم من أول السطر */
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dotted #ddd;
+}
+
+
+
         .label {
           font-weight: bold;
+            text-align: right;
+
           color: #333;
         }
         .value {
@@ -615,6 +627,7 @@ function printInvoice() {
           color: white;
           padding: 12px;
           text-align: center;
+
         }
         .invoice-table td {
           padding: 12px;
@@ -626,6 +639,7 @@ function printInvoice() {
           padding: 20px;
           background: #f9f9f9;
           border-radius: 10px;
+
         }
         .invoice-total {
           display: flex;
@@ -634,11 +648,17 @@ function printInvoice() {
           font-weight: bold;
           color: #FF2400;
           margin-bottom: 15px;
+             display: flex;
+  justify-content: flex-start; /* الاسم من أول السطر */
+  gap: 10px;
         }
         .invoice-status {
           display: flex;
           justify-content: space-between;
           align-items: center;
+             display: flex;
+  justify-content: flex-start; /* الاسم من أول السطر */
+  gap: 10px;
         }
         .status-badge {
           padding: 8px 20px;
@@ -653,6 +673,7 @@ function printInvoice() {
           padding-top: 20px;
           border-top: 2px dashed #ccc;
           color: #666;
+
         }
         .invoice-notes p {
           margin: 5px 0;
@@ -704,5 +725,3 @@ window.onclick = function (event) {
     confirmDelete(false);
   }
 };
-
-

@@ -8,6 +8,7 @@ import {
   chefPage,
   waitersPage,
   cashierPage,
+  AllReviews,
 } from '../controller/adminController.js';
 
 // Admin Routes
@@ -20,6 +21,8 @@ router.get(`/chef/:password`, chefPage);
 router.get(`/waiter/:password`, waitersPage);
 
 router.get(`/cashier/:password`, cashierPage);
+
+router.get(`/reviews/:password`, AllReviews);
 
 
 export default router;
