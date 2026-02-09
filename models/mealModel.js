@@ -37,15 +37,11 @@ const mealSchema = new mongoose.Schema(
 );
 
 mealSchema.pre('save', function (next) {
-  if (this.isModified('name')) {
+  if (!this.slug || this.isModified('name')) {
     this.slug = slugify(this.name, { lower: true });
   }
   next();
 });
-
-// ✅ شيل الـ indexes دي - مش محتاجها
-mealSchema.index({ name: 1 });
-mealSchema.index({ slug: 1 });
 
 const Meal = mongoose.model('Meal', mealSchema);
 export default Meal;
