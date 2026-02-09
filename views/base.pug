@@ -7,27 +7,27 @@ html(lang="ar" dir="rtl")
     meta(http-equiv="X-UA-Compatible" content="IE=edge")
 
     //- SEO Meta Tags
-    title= pageTitle || '   أفضل شواية في مصر     '
-    meta(name="description" content=pageDescription || 'يا   - مطعم متخصص في الكبدة والشواء المصري الأصيل. اطلب الآن أونلاين كبدة إسكندراني، شاورما، كفتة، وكل أنواع المشويات. توصيل سريع في العزازية ومصر.')
-    meta(name="keywords" content="كبدة، كبدة إسكندراني، شواء، شواية، مطعم مصري، كفتة، شاورما، طلبات أونلاين، توصيل طعام، يا كبدة، Ya Kebda، العزازية، مصر، مشويات، لحوم، وجبات سريعة")
-    meta(name="author" content="يا كبدة - Ya Kebda")
+    title= pageTitle || 'شواية - أفضل مشويات وكفتة في مصر'
+    meta(name="description" content=pageDescription || 'شواية - مطعم متخصص في الكفتة والمشويات المصرية الأصيلة. اطلب الآن أونلاين كفتة مشوية، ريش، كباب، طاووق، وكل أنواع المشويات. توصيل سريع في العزازية ومصر.')
+    meta(name="keywords" content="شواية، مشويات، كفتة، كفتة مشوية، كباب، ريش، طاووق، شيش طاووق، فراخ مشوية، لحم مشوي، مطعم مصري، طلبات أونلاين، توصيل طعام، العزازية، مصر، لحوم مشوية، وجبات سريعة")
+    meta(name="author" content="شواية")
     meta(name="robots" content="index, follow")
     meta(name="language" content="Arabic")
     meta(name="revisit-after" content="7 days")
 
     //- Open Graph Meta Tags (Facebook, LinkedIn)
     meta(property="og:type" content="website")
-    meta(property="og:title" content=pageTitle || 'يا كبدة - Ya Kebda | أفضل شواية في مصر')
-    meta(property="og:description" content=pageDescription || 'مطعم متخصص في الكبدة والشواء المصري الأصيل. اطلب الآن!')
+    meta(property="og:title" content=pageTitle || 'شواية | أفضل مشويات وكفتة في مصر')
+    meta(property="og:description" content=pageDescription || 'مطعم متخصص في الكفتة والمشويات المصرية الأصيلة. اطلب الآن!')
     meta(property="og:image" content="/img/logo.png")
     meta(property="og:url" content="https://yourdomain.com")
-    meta(property="og:site_name" content="يا كبدة - Ya Kebda")
+    meta(property="og:site_name" content="شواية")
     meta(property="og:locale" content="ar_EG")
 
     //- Twitter Card Meta Tags
     meta(name="twitter:card" content="summary_large_image")
-    meta(name="twitter:title" content=pageTitle || ' شواية - shawaya  ')
-    meta(name="twitter:description" content=pageDescription || 'أفضل كبدة ومشويات في مصر')
+    meta(name="twitter:title" content=pageTitle || 'شواية - أفضل مشويات في مصر')
+    meta(name="twitter:description" content=pageDescription || 'أفضل كفتة ومشويات في مصر')
     meta(name="twitter:image" content="/img/logo.png")
 
     //- Canonical URL
@@ -49,9 +49,9 @@ html(lang="ar" dir="rtl")
       {
         "@context": "https://schema.org",
         "@type": "Restaurant",
-        "name": "يا كبدة - Ya Kebda",
+        "name": "شواية",
         "image": "/img/logo.png",
-        "description": "مطعم متخصص في الكبدة والشواء المصري الأصيل",
+        "description": "مطعم متخصص في الكفتة والمشويات المصرية الأصيلة",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "العزازية",
@@ -60,12 +60,12 @@ html(lang="ar" dir="rtl")
         },
         "telephone": "+20 123 456 7890",
         "email": "ramym4665@gmail.com",
-        "servesCuisine": "مصري، شواء، كبدة",
+        "servesCuisine": "مصري، مشويات، كفتة، كباب",
         "priceRange": "$$",
         "url": "https://yourdomain.com",
         "sameAs": [
-          "https://facebook.com/yakebda",
-          "https://instagram.com/yakebda"
+          "https://facebook.com/shawaya",
+          "https://instagram.com/shawaya"
         ],
         "openingHoursSpecification": [
           {
@@ -92,9 +92,9 @@ html(lang="ar" dir="rtl")
         .nav-wrapper
           .logo(itemscope itemtype="https://schema.org/Organization")
             a(href="/" itemprop="url")
-              img(src="/img/logo.png" alt="يا كبدة - Ya Kebda - أفضل شواية في مصر" itemprop="logo" width="120" height="120")
+              img(src="/img/logo.png" alt="شواية - أفضل مشويات وكفتة في مصر" itemprop="logo" width="120" height="120")
             .logo-text
-              p(itemprop="slogan") أسرع واطلب نقعة جديدة
+              p(itemprop="slogan") أحلى كفتة ومشويات على الفحم
 
           nav.nav(role="navigation" aria-label="القائمة الرئيسية")
             a(href="/" class=(title === 'Home' ? 'active' : '') aria-label="الصفحة الرئيسية") الرئيسية
@@ -116,8 +116,8 @@ html(lang="ar" dir="rtl")
       .container
         .footer-content
           .footer-logo
-            img(src="/img/logo.png" alt="يا كبدة - Ya Kebda" itemprop="logo" width="100" height="100")
-            p(itemprop="description") أسرع واطلب نقعة جديدة
+            img(src="/img/logo.png" alt="شواية" itemprop="logo" width="100" height="100")
+            p(itemprop="description") أحلى كفتة ومشويات على الفحم
 
           .footer-links
             h4 روابط سريعة
@@ -126,30 +126,32 @@ html(lang="ar" dir="rtl")
               a(href="/menu" aria-label="المنيو") المنيو
               a(href="/offers" aria-label="العروض") العروض
               a(href="/cart" aria-label="السلة") السلة
-              a(href="/review" aria-label="التقيم")  التقيم
+              a(href="/review" aria-label="التقييم") التقييم
 
           .footer-contact
             h4 تواصل معنا
 
             p(itemprop="telephone")
-              a(href="tel:+201234567890" aria-label="اتصل بنا") 📞 +20 123 456 7890
+              a(href="tel:01515578224" aria-label="اتصل بنا") 📞 015 1557 8224
+
+            p(itemprop="telephone")
+              a(href="tel:01515578207" aria-label="اتصل بنا") 📞 015 1557 8207
 
             p(itemprop="email")
               a(href="mailto:ramym4665@gmail.com" aria-label="راسلنا عبر البريد") 📧 ramym4665@gmail.com
 
-            p(itemprop="address" itemscope itemtype="https://schema.org/PostalAddress")
-              span(itemprop="addressLocality") 📍 العزازية
-              | ،
-              span(itemprop="addressCountry") مصر
 
             p
-              a(href="https://facebook.com/yakebda" target="_blank" rel="noopener noreferrer" itemprop="sameAs" aria-label="تابعنا على فيسبوك") فيسبوك
+              a(href="https://maps.app.goo.gl/SAjWdmUcT9bEfqQRA" target="_blank" rel="noopener noreferrer" itemprop="sameAs" aria-label="     ") 📍 اللوكيشن > >  العزازية
 
-            p
-              a(href="https://instagram.com/yakebda" target="_blank" rel="noopener noreferrer" itemprop="sameAs" aria-label="تابعنا على إنستجرام") إنستجرام
+            //- p
+            //-   a(href="https://facebook.com/shawaya" target="_blank" rel="noopener noreferrer" itemprop="sameAs" aria-label="تابعنا على فيسبوك") فيسبوك
+
+            //- p
+            //-   a(href="https://instagram.com/shawaya" target="_blank" rel="noopener noreferrer" itemprop="sameAs" aria-label="تابعنا على إنستجرام") إنستجرام
 
         .footer-bottom
-          p © 2026 شواية . جميع الحقوق محفوظة.
+          p © 2026 شواية. جميع الحقوق محفوظة.
 
     //- Scripts
     script(src="/js/script.js" defer)
