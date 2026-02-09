@@ -25,6 +25,7 @@ block content
   // Products Section - Waiter Style
   section.waiter-products-section
     .container
+      h2.offers-title    المنيو
       .waiter-grid#waiterGrid
         each meal in meals
           .waiter-item(data-category=meal.category)
@@ -126,7 +127,31 @@ block content
       p الإجمالي: <span id="modalTotal"></span> جنيه
       button.btn.btn-primary(onclick="closeWaiterModal()") حسناً
 
+  // Scripts
   script.
+    // Toast Notification Function
+    function showToast(type, title, message) {
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) existingToast.remove();
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = { warning: '⚠️', error: '❌', success: '✅' };
+
+      toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || '📋'}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <p class="toast-message">${message}</p>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+      `;
+
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
+    }
+
     // Increase quantity
     function increaseWaiterQty(btn) {
       const input = btn.previousElementSibling;
@@ -176,12 +201,7 @@ block content
         }
       });
 
-      if (hasItems) {
-        orderItemsDiv.innerHTML = orderHTML;
-      } else {
-        orderItemsDiv.innerHTML = '<p class="empty-order">لم تقم بإضافة أي طلبات بعد</p>';
-      }
-
+      orderItemsDiv.innerHTML = hasItems ? orderHTML : '<p class="empty-order">لم تقم بإضافة أي طلبات بعد</p>';
       totalSpan.textContent = `${total} جنيه`;
     }
 
@@ -191,7 +211,7 @@ block content
       const customerNotes = document.getElementById('customerNotes').value.trim();
 
       if (!tableNumber) {
-        alert('⚠️ من فضلك أدخل رقم الترابيزة');
+        showToast('warning', 'رقم الترابيزة مطلوب', 'من فضلك أدخل رقم الترابيزة أولاً');
         document.getElementById('tableNumber').focus();
         return;
       }
@@ -203,72 +223,44 @@ block content
       allInputs.forEach(input => {
         const qty = parseInt(input.value) || 0;
         if (qty > 0) {
-          const name = input.dataset.name;
-          const price = parseFloat(input.dataset.price);
-          const image = input.dataset.image;
-
           cart.push({
-            name: name,
-            price: price,
+            name: input.dataset.name,
+            price: parseFloat(input.dataset.price),
             quantity: qty,
-            image: image
+            image: input.dataset.image
           });
-
-          total += qty * price;
+          total += qty * parseFloat(input.dataset.price);
         }
       });
 
       if (cart.length === 0) {
-        alert('⚠️ من فضلك اختر على الأقل طبق واحد');
+        showToast('warning', 'الطلب فارغ', 'من فضلك اختر على الأقل طبق واحد');
         return;
       }
 
-      // تجهيز البيانات حسب الـ Model
-      const orderData = {
-        address: `${tableNumber}`,
-        cart: cart,
-        total: total,
-      };
-
-      // إضافة الملاحظات إذا كانت موجودة
-      if (customerNotes) {
-        orderData.notes = customerNotes;
-      }
-
-      console.log('Order Data:', orderData);
+      const orderData = { address: tableNumber, cart, total };
+      if (customerNotes) orderData.notes = customerNotes;
 
       try {
-        // إرسال الطلب للـ API
         const response = await fetch('/api/v1/order', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(orderData)
         });
-
         const data = await response.json();
 
         if (data.status === 'success') {
-          console.log('Order sent successfully:', data);
-
-          // Show success modal
           document.getElementById('modalOrderNumber').textContent = data.data.numberOrder || 'جديد';
           document.getElementById('modalTableNumber').textContent = tableNumber;
           document.getElementById('modalTotal').textContent = total;
           document.getElementById('waiterSuccessModal').classList.add('show');
-
-          // Reset form after 2 seconds
-          setTimeout(() => {
-            resetWaiterForm();
-          }, 2000);
+          setTimeout(resetWaiterForm, 2000);
         } else {
-          alert('❌ حدث خطأ: ' + data.message);
+          showToast('error', 'فشل الإرسال', data.message || 'حدث خطأ أثناء إرسال الطلب');
         }
-
       } catch (error) {
         console.error('Error:', error);
-        alert('❌ حدث خطأ أثناء إرسال الطلب. من فضلك حاول مرة أخرى.');
+        showToast('error', 'خطأ في الاتصال', 'تعذر الاتصال بالسيرفر، من فضلك حاول مرة أخرى');
       }
     }
 
@@ -281,16 +273,12 @@ block content
     function resetWaiterForm() {
       document.getElementById('tableNumber').value = '';
       document.getElementById('customerNotes').value = '';
-      document.querySelectorAll('.waiter-qty-input').forEach(input => {
-        input.value = '0';
-      });
+      document.querySelectorAll('.waiter-qty-input').forEach(input => input.value = '0');
       updateWaiterSummary();
     }
 
     // Click outside modal to close
     document.addEventListener('click', (e) => {
       const modal = document.getElementById('waiterSuccessModal');
-      if (e.target === modal) {
-        closeWaiterModal();
-      }
+      if (e.target === modal) closeWaiterModal();
     });
