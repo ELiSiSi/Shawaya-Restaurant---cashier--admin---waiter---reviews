@@ -14,7 +14,6 @@ import {
 // Admin Routes
 router.get('/login', loginAdmin);
 
-router.get(`/dashboard/:password`, adminPage);
 
 router.get(`/chef/:password`, chefPage);
 
@@ -22,7 +21,12 @@ router.get(`/waiter/:password`, waitersPage);
 
 router.get(`/cashier/:password`, cashierPage);
 
-router.get(`/reviews/:password`, AllReviews);
+router.get(`/dashboard/:password/admin/juewsorfewofsihgnfvijsdgjsdjkigfsdgfierhiugfheruiwfierugf`, adminPage);
+
+router.get(
+  `/reviews/:password/admin/juewsorfewofsihgnfvijsdgjsdjkigfsdgfierhiugfheruiwfierugf`,
+  AllReviews
+);
 
 
 export default router;
